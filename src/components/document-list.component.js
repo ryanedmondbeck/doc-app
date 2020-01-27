@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import axios from 'axios';
-// import xmlparser from 'react-xml-parser';
+var parseString = require('xml2js').parseString;
 
 export default class DocumentList extends React.Component {
 	
@@ -8,17 +8,13 @@ export default class DocumentList extends React.Component {
 		super(props);
 
 		this.state = {
-			documents: []
+			documents: 'stuff'
 		}
 	}
 
 	componentDidMount() {
-		const url = 'https://dev1.chili-publish.com/CHILI/rest-api/v1/resources/Documents/treelevel?parentFolder=templates&numLevels=1';
-		// const proxyurl = 'https://cors-anywhere.herokuapp.com/'
-		// const params = {
-		// 	'parentFolder': 'templates',
-		// 	'numLevels': 1
-		// } 
+		const cors_api_url = 'https://cors-anywhere.herokuapp.com/'
+		const url = 'dev1.chili-publish.com/CHILI/rest-api/v1/resources/Documents/treelevel?parentFolder=templates&numLevels=1';
 		const headers = {
   			headers: {
     			'Accept': 'application/xml',
@@ -26,17 +22,28 @@ export default class DocumentList extends React.Component {
   			}
 		};
 		// send a get request
-		axios.get(url, headers)
-			.then(res => {
-				// const documents = res.data;
-				console.log(res.data);
-				return res;
-			})	
-			.catch(() => console.log("Can’t access " + url + " response."))
+		function getDocuments() {
+			return axios.get(cors_api_url + url, headers)
+				.then(res => {
+					
+					parseString(res.data, (err, result) => {
+					 
+					    var doc_string = JSON.stringify(result);
+					    console.log(doc_string);
+					    // return doc_string;
 
+					});
+					
+				})
+				.catch(() => console.log("Can’t access " + url + " response."))
+		}
+		this.setState(() => ({
+			documents: this.state.documents + getDocuments()
+		}));
+		console.log(this.state.documents)
 	}
 
   	render() {
-    	return <h1>whatever</h1>;
+    	return <p>{this.state.documents}</p>;
   	}
 }
